@@ -1,0 +1,71 @@
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'bncpineda')
+BEGIN
+    CREATE DATABASE bncpineda;
+END;
+
+use bncpineda
+
+create table persona
+(
+    id             int identity (100, 1)
+        constraint TB_PERSONA_pk
+            primary key,
+    nombre         varchar(255),
+    genero         varchar(10),
+    edad           int,
+    fecha_nac      datetime,
+    fecha_reg      datetime default getdate(),
+    direccion      varchar(255),
+    telefono       varchar(255),
+    identificacion varchar(15)
+)
+go
+
+exec sp_addextendedproperty 'MS_Description', 'nombre usuario', 'SCHEMA', 'dbo', 'TABLE', 'persona', 'COLUMN', 'nombre'
+go
+
+create table cliente
+(
+    id_cliente int identity (100, 1)
+        constraint TB_CLIENTE_pk
+            primary key,
+    id_persona int
+        constraint TB_CLIENTE_TB_PERSONA_id_persona_fk
+            references persona,
+    estado     int default 1,
+    contrasena varchar(50) not null
+)
+go
+
+create table cuenta
+(
+    id            int identity (200, 1)
+        constraint TB_CUENTA_pk
+            primary key,
+    id_cliente    int
+        constraint TB_CUENTA_TB_CLIENTE_id_cliente_fk
+            references cliente,
+    tipo_cuenta   varchar(50),
+    saldo_inicial money default 0,
+    numero_cuenta varchar(20) not null
+        constraint cuenta_pk
+            unique,
+    estado        bit   default 1
+)
+go
+
+create table movimiento
+(
+    id              int identity (300, 1)
+        constraint TB_MOVIMIENTO_pk
+            primary key,
+    fecha           datetime,
+    tipo_movimiento varchar(20),
+    valor           money,
+    saldo           money,
+    id_cuenta       int
+        constraint TB_MOVIMIENTO_TB_CUENTA_id_cuenta_fk
+            references cuenta
+)
+go
+
